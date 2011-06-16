@@ -3,7 +3,7 @@
 /**
  * Implements hook_menu().
  */
-function language_selectionpage_menu() {
+function language_selection_page_menu() {
   $items = array();
 
   $items['admin/settings/language_selection_page'] = array(
