@@ -1,1 +1,4 @@
-name = Language Selection Page
+core = "6.x"
+description = "Provides an additional language negociation fallback using a selection page."
+name = "Language Selection Page"
+package = "Internationalization"

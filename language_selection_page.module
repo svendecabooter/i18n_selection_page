@@ -1,0 +1,144 @@
+<?php
+
+/**
+ * Implements hook_menu().
+ */
+function language_selectionpage_menu() {
+  $items = array();
+
+  $items['admin/settings/language_selection_page'] = array(
+      'title' => t('Language Selection Page Settings'),
+      'description' => t('Language Selection Page settings'),
+      'page callback' => 'drupal_get_form',
+      'page arguments' => array('language_selection_page_admin'),
+      'access arguments' => array('access administration pages'),
+      'file' => 'language_selection_page.admin.inc',
+      'type' => MENU_NORMAL_ITEM
+  );
+
+  $items['language_selection_page'] = array(
+      'description' => t('Language Selection Page'),
+      'page callback' => 'language_selection_page_page',
+      'access arguments' => array('access content'),
+      'type' => MENU_NORMAL_ITEM
+  );
+
+  return $items;
+}
+
+
+/**
+ * Implements hook_boot().
+ *
+ */
+function language_selection_page_boot() {
+  $mode = variable_get('language_negotiation', LANGUAGE_NEGOTIATION_NONE);
+  if ($mode == LANGUAGE_NEGOTIATION_PATH) {
+    $languages = language_list('enabled');
+    $languages = $languages[1];
+    $args = isset($_GET['q']) ? explode('/', $_GET['q']) : array();
+    $prefix = array_shift($args);
+    // Search prefix within enabled languages.
+    foreach ($languages as $language) {
+      if (!empty($language->prefix) && $language->prefix == $prefix) {
+        //Store the language prefix
+        _language_selection_page_prefix($language);
+      }
+    }
+  }
+}
+
+/**
+ * Implements hook_init().
+ *
+ */
+function language_selection_page_init() {
+  $mode = variable_get('language_negotiation', LANGUAGE_NEGOTIATION_NONE);
+
+  if (($mode == LANGUAGE_NEGOTIATION_PATH)) {
+
+    $prefix_from_url = _language_selection_page_prefix();
+
+    if (empty($prefix_from_url)) {
+      $redirect_type = variable_get('language_selection_page_redirect_type', 0);
+      if ($redirect_type == 0) return;
+      
+      parse_str($_SERVER['QUERY_STRING'], $query_parameters);
+      unset($query_parameters['q']);
+
+      $args = array();
+      $args['destination'] = $_GET['q'];
+      if (count($query_parameters)>=1) {
+        $args['args'] = http_build_query($query_parameters, '', '&');
+      }
+
+      drupal_goto('language_selection_page', $args);
+    }
+  } else {
+    drupal_set_message(t('The Language Selection Page module is enabled. But the %setting_name setting is not set to required "%setting_value" value. You should either disable the module or <a href="@setting_url">change your configuration</a>.', array(
+    	'%setting_name' => t('Language negotiation'),
+      '%setting_value' => t('Path prefix with language fallback.'),
+      '@setting_url' => url('admin/settings/language/configure'),
+    )), 'warning');
+  }
+}
+
+/**
+ * Implements hook_theme().
+ *
+ */
+function language_selection_page_theme() {
+  return array(
+      'language_selection_page' => array(
+          'arguments' => array('data' => array()),
+          'template' => 'language_selection_page'
+      ),
+  );
+}
+
+function language_selection_page_page() {
+
+  parse_str($_SERVER['QUERY_STRING'], $query_parameters);
+
+  $nulllang = new stdClass;
+  $link_text = url($query_parameters['destination'], array('query' => $query_parameters['args'], 'language' => $nulllang));
+  $data['from_link'] = l($link_text, $query_parameters['destination'], array('query' => $query_parameters['args'], 'language' => $nulllang));
+
+  $items = array();
+  foreach (language_list() as $prefix => $language) {
+    if ($language->prefix == NULL) {continue;}
+    $link_text = url($query_parameters['destination'], array('query' => $query_parameters['args'], 'language' => $language));
+    $items[] = l($link_text, $query_parameters['destination'], array('query' => $query_parameters['args'], 'language' => $language));
+  }
+
+  $data['links'] = theme('item_list', $items);
+
+  $redirect_type = variable_get('language_selection_page_redirect_type', 0);
+  switch ($redirect_type) {
+    case 1:
+      return theme('language_selection_page', $data);
+      break;
+    case 2:
+      print theme('language_selection_page', $data);
+      exit;
+  }
+  
+}
+
+/**
+ * Helper function to pass the language prefix from URL from
+ * language_selection_page_boot to language_selection_page_init. Internal use only.
+ *
+ * @see language_selection_page_boot()
+ * @see language_selection_page_init()
+ *
+ * @return Object
+ *   The language object for the language set through URL prefix (if any).
+ */
+function _language_selection_page_prefix($language = NULL) {
+  static $prefix_language = NULL;
+  if (!empty($language)) {
+    $prefix_language = $language;
+  }
+  return $prefix_language;
+}
