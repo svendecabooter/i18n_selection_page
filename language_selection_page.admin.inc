@@ -11,7 +11,7 @@ function language_selection_page_admin() {
     '#multiple' => FALSE,
     '#default_value' => variable_get('language_selection_page_redirect_type', 0),
     '#options' => $options,
-    '#description' => t('Description')
+    '#description' => t('Template in theme: the template of the selection will be embedded into the site theme, Template only: only use the language_selectionpage template.')
   );
   
   return system_settings_form($form);

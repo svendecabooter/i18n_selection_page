@@ -105,13 +105,26 @@ function language_selection_page_page() {
   $data['from_link'] = l($link_text, $query_parameters['destination'], array('query' => $query_parameters['args'], 'language' => $nulllang));
 
   $items = array();
+  $languagepaths = translation_path_get_translations($query_parameters['destination']);  
   foreach (language_list() as $prefix => $language) {
     if ($language->prefix == NULL) {continue;}
-    $link_text = url($query_parameters['destination'], array('query' => $query_parameters['args'], 'language' => $language));
-    $items[] = l($link_text, $query_parameters['destination'], array('query' => $query_parameters['args'], 'language' => $language));
+    
+    $link_text = $links_text[$language->language];
+    /* build link url, translated if needed */
+    if(array_key_exists($language->language, $languagepaths)){    
+      $link_url = url($languagepaths[$language->language], array('query' => $query_parameters['args'], 'language' => $language));
+      $items[$language->language] = l($link_text, $languagepaths[$language->language], array('query' => $query_parameters['args'], 'language' => $language));
+    }
+    else{
+      $link_url = url($query_parameters['destination'], array('query' => $query_parameters['args'], 'language' => $language));
+      $items[$language->language] = l($link_text, $query_parameters['destination'], array('query' => $query_parameters['args'], 'language' => $language));
+    }
+       
+    $links_items[$language->language]= $link_url;
   }
 
-  $data['links'] = theme('item_list', $items);
+  $data['links'] = $items;
+  $data['links_items'] = $links_items;
 
   $redirect_type = variable_get('language_selection_page_redirect_type', 0);
   switch ($redirect_type) {
