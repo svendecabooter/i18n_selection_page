@@ -53,13 +53,21 @@ function language_selection_page_boot() {
  *
  */
 function language_selection_page_init() {
+  global $language;
+  _language_selection_page_enable_bootstrap();
+  $lang_default = language_default();
+  
+  /* prevent drush from entering this hook */
+  if (!isset($_SERVER['SERVER_ADDR'])) return FALSE;
+  if ($_GET['q'] == 'language_selection_page' ) return FALSE;
+  
   $mode = variable_get('language_negotiation', LANGUAGE_NEGOTIATION_NONE);
 
   if (($mode == LANGUAGE_NEGOTIATION_PATH)) {
-
     $prefix_from_url = _language_selection_page_prefix();
-
+    
     if (empty($prefix_from_url)) {
+            
       $redirect_type = variable_get('language_selection_page_redirect_type', 0);
       if ($redirect_type == 0) return;
       
@@ -71,7 +79,7 @@ function language_selection_page_init() {
       if (count($query_parameters)>=1) {
         $args['args'] = http_build_query($query_parameters, '', '&');
       }
-
+      
       drupal_goto('language_selection_page', $args);
     }
   } else {
@@ -154,4 +162,16 @@ function _language_selection_page_prefix($language = NULL) {
     $prefix_language = $language;
   }
   return $prefix_language;
+}
+
+/**
+ * Enable bootstrap automatically thanks to that function.
+ *
+ * @see language_selection_page_init()
+ */
+function _language_selection_page_enable_bootstrap() {
+  $bootstrap = db_result(db_query("SELECT bootstrap FROM {system} WHERE name = 'language_selection_page'"));
+  if (!$bootstrap) {
+    db_query("UPDATE {system} SET bootstrap=1 WHERE name = 'language_selection_page'");
+  }
 }
