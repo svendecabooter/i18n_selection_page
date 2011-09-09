@@ -169,7 +169,7 @@ function i18n_selection_page_page() {
       continue;
     }
 
-    $link_text = ucfirst(strtolower(t('Continue in ', array(), $language->language) . t($language->name, array(), $language->language)));
+    $link_text = ucfirst(strtolower(t('Continue in ', array(), $language->language))) . $language->native;
   
     /* build link url, translated if needed */
     if (array_key_exists($language->language, $languagepaths)) {
