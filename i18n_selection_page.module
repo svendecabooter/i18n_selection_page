@@ -1,7 +1,6 @@
 <?php
 
-
-// Must be the same key as in language_cookie.module.
+// This is the name of the cookie. You can change it if you want.
 define('LANGUAGE_COOKIE_KEY', 'language_prefix');
 
 /**
