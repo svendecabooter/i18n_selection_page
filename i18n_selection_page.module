@@ -124,7 +124,7 @@ function i18n_selection_page_init() {
 
       }
 
-      drupal_goto($destination, $args);
+      drupal_goto($destination, $args['args']);
 
 
     } else {
