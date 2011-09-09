@@ -1,0 +1,237 @@
+<?php
+
+
+// Must be the same key as in language_cookie.module.
+define('LANGUAGE_COOKIE_KEY', 'language_prefix');
+
+/**
+ * Implements hook_menu().
+ */
+function i18n_selection_page_menu() {
+  $items = array();
+
+  $items['admin/settings/language/i18n/selection_page'] = array(
+    'title' => t('Language selection page'),
+    'description' => t('Configure the language selection page behavior'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('i18n_selection_page_admin'),
+    'access arguments' => array('access administration pages'),
+    'file' => 'i18n_selection_page.admin.inc',
+    'type' => MENU_LOCAL_TASK
+  );
+
+  $items['language_selection'] = array(
+    'description' => t('Language selection page'),
+    'page callback' => 'i18n_selection_page_page',
+    'access arguments' => array('access content'),
+    'type' => MENU_NORMAL_ITEM
+  );
+
+  return $items;
+}
+
+
+/**
+ * Implements hook_boot().
+ *
+ */
+function i18n_selection_page_boot() {
+
+  if (variable_get('language_negotiation', LANGUAGE_NEGOTIATION_NONE) == LANGUAGE_NEGOTIATION_PATH) {
+    $languages = language_list('enabled');
+    $languages = $languages[1];
+    $args = isset($_GET['q']) ? explode('/', $_GET['q']) : array();
+    $prefix = array_shift($args);
+    // Search prefix within enabled languages.
+    foreach ($languages as $language) {
+      if (!empty($language->prefix) && $language->prefix == $prefix) {
+        //Store the language prefix
+        _i18n_selection_page_prefix($language);
+      }
+    }
+  }
+}
+
+/**
+ * Implements hook_init().
+ *
+ */
+function i18n_selection_page_init() {
+  global $language;
+  _i18n_selection_page_enable_bootstrap();
+  $lang_default = language_default();
+  $languages = language_list();
+
+  $paths = variable_get('i18n_selection_page_blacklisted_paths', array());
+  $url = _i18n_selection_page_page_parse_url($_GET['q']);
+  list($adminpath) = explode('/', $url['path']);
+
+  /* prevent drush from entering this hook */
+  if (in_array($adminpath, $paths)) return FALSE;
+  if ($_GET['q'] == 'language_selection') return FALSE;
+  if (!isset($_SERVER['SERVER_ADDR'])) return FALSE;
+
+  if (variable_get('language_negotiation', LANGUAGE_NEGOTIATION_NONE) == LANGUAGE_NEGOTIATION_PATH) {
+    $language_from_prefix = _i18n_selection_page_prefix();
+
+    if (empty($language_from_prefix)) {
+
+      if (variable_get('i18n_selection_page_redirect_type', 0) == 0) return;
+
+      parse_str($_SERVER['QUERY_STRING'], $query_parameters);
+      unset($query_parameters['q']);
+
+      $args = array();
+      $args['destination'] = $_GET['q'];
+      if (count($query_parameters) >= 1) {
+        $args['args'] = http_build_query($query_parameters, '', '&');
+      }
+
+      $is_cookie_set = (!empty($_COOKIE[LANGUAGE_COOKIE_KEY]) && isset($languages[$_COOKIE[LANGUAGE_COOKIE_KEY]]));
+      $cookie_behavior = variable_get('i18n_selection_page_use_language_cookie', 0);
+
+      if ((1 == variable_get('i18n_selection_page_enable', 0))) {
+
+        switch ($cookie_behavior) {
+          case 0:
+            $destination = 'language_selection';
+            break;
+          case 1:
+            $language = ($is_cookie_set == true) ? $languages[$_COOKIE[LANGUAGE_COOKIE_KEY]] : NULL;
+            $destination = 'language_selection';
+            break;
+          case 2:
+            unset($args['destination']);
+            $language = ($is_cookie_set == true) ? $languages[$_COOKIE[LANGUAGE_COOKIE_KEY]] : NULL;
+            $destination = ($language == NULL) ? 'language_selection' : $_GET['q'];
+            break;
+        }
+
+      } else {
+
+        switch ($cookie_behavior) {
+          case 0:
+            $language = $lang_default;
+            $destination = $_GET['q'];
+            break;
+          case 1:
+            $language = ($is_cookie_set == true) ? $languages[$_COOKIE[LANGUAGE_COOKIE_KEY]] : $lang_default;
+            $destination = $_GET['q'];
+            break;
+          case 2:
+            $destination = $_GET['q'];
+            break;
+        }
+
+      }
+
+      drupal_goto($destination, $args);
+
+
+    } else {
+      if ((0 != variable_get('i18n_selection_page_use_language_cookie', 0))) {
+        $isCookieOk = setcookie(LANGUAGE_COOKIE_KEY, $language_from_prefix->language, time() + variable_get('i18n_selection_page_cookie_lifetime', 60 * 60 * 24 * 30), '/');
+      }
+    }
+  } else {
+    drupal_set_message(t('The Language Selection Page module is enabled. But the %setting_name setting is not set to required "%setting_value" value. You should either disable the module or <a href="@setting_url">change your configuration</a>.', array('%setting_name' => t('Language negotiation'),
+                                                                                                                                                                                                                                                           '%setting_value' => t('Path prefix with language fallback.'),
+                                                                                                                                                                                                                                                           '@setting_url' => url('admin/settings/language/configure'),
+                                                                                                                                                                                                                                                      )), 'warning');
+  }
+}
+
+/**
+ * Implements hook_theme().
+ *
+ */
+function i18n_selection_page_theme() {
+  return array(
+    'i18n_selection_page' => array(
+      'arguments' => array('data' => array()),
+      'template' => 'i18n_selection_page'
+    ),
+  );
+}
+
+function i18n_selection_page_page() {
+
+  parse_str($_SERVER['QUERY_STRING'], $query_parameters);
+  //$query_parameters['args']['setlang'] = 1;
+
+  $nulllang = new stdClass;
+  $link_text = url($query_parameters['destination'], array('query' => $query_parameters['args'], 'language' => $nulllang));
+  $data['from_link'] = l($link_text, $query_parameters['destination'], array('query' => $query_parameters['args'], 'language' => $nulllang));
+
+  $items = array();
+  $languagepaths = translation_path_get_translations($query_parameters['destination']);
+  foreach (language_list() as $prefix => $language) {
+    if ($language->prefix == NULL) {
+      continue;
+    }
+
+    /* build link url, translated if needed */
+    if (array_key_exists($language->language, $languagepaths)) {
+      $link_url = url($languagepaths[$language->language], array('query' => $query_parameters['args'], 'language' => $language));
+      $items[$language->language] = l($link_url, $languagepaths[$language->language], array('query' => $query_parameters['args'], 'language' => $language));
+    }
+    else {
+      $link_url = url($query_parameters['destination'], array('query' => $query_parameters['args'], 'language' => $language));
+      $items[$language->language] = l($link_url, $query_parameters['destination'], array('query' => $query_parameters['args'], 'language' => $language));
+    }
+
+    $links_items[$language->language] = $link_url;
+  }
+
+  $data['links'] = $items;
+  $data['links_items'] = $links_items;
+
+  $redirect_type = variable_get('i18n_selection_page_redirect_type', 0);
+  switch ($redirect_type) {
+    case 1:
+      return theme('i18n_selection_page', $data);
+      break;
+    case 2:
+      print theme('i18n_selection_page', $data);
+      exit;
+  }
+}
+
+/**
+ * Helper function to pass the language prefix from URL from
+ * i18n_selection_page_boot to i18n_selection_page_init. Internal use only.
+ *
+ * @see i18n_selection_page_boot()
+ * @see i18n_selection_page_init()
+ *
+ * @return Object
+ *   The language object for the language set through URL prefix (if any).
+ */
+function _i18n_selection_page_prefix($language = NULL) {
+  static $prefix_language = NULL;
+  if (!empty($language)) {
+    $prefix_language = $language;
+  }
+  return $prefix_language;
+}
+
+/**
+ * Function to enable bootstrap in system table so that hook_boot() is triggered
+ */
+function _i18n_selection_page_enable_bootstrap() {
+  $bootstrap = db_result(db_query("SELECT bootstrap FROM {system} WHERE name = 'i18n_selection_page'"));
+  if (!$bootstrap) {
+    db_query("UPDATE {system} SET bootstrap=1 WHERE name = 'i18n_selection_page'");
+  }
+}
+
+/*
+ * Custom function to parse a URL.
+ */
+function _i18n_selection_page_page_parse_url($string_url) {
+  $array_url = parse_url($string_url);
+  if (isset($array_url['query'])) {
+    parse_str($array_url['query'], $array_url['query']);
+  }
+  return $array_url;
+}
