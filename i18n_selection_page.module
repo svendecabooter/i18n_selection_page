@@ -60,7 +60,7 @@ function i18n_selection_page_init() {
 
   $query = array();
   $query['destination'] = $_GET['q'];
-  $query = array_merge($query, $url_parsed['query']);
+  $query = array_merge((array)$query, (array)$url_parsed['query']);
   unset($query['q']);
 
   $destination = FALSE;
