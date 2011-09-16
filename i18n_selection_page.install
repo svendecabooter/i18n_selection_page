@@ -1,0 +1,10 @@
+<?php
+
+function i18n_selection_page_update_6001() {
+  if (variable_get('i18n_selection_page_use_language_cookie', 0) == 2) {
+    variable_set('i18n_selection_page_enable', 0);
+    variable_set('i18n_selection_page_use_language_cookie', 1);
+  }
+
+  return array();
+}
