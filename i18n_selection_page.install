@@ -6,5 +6,7 @@ function i18n_selection_page_update_6001() {
     variable_set('i18n_selection_page_use_language_cookie', 1);
   }
 
+  update_sql("UPDATE {system} SET bootstrap=0 WHERE name = 'i18n_selection_page'");
+  
   return array();
 }
