@@ -3,6 +3,26 @@
 function i18n_selection_page_admin() {
 
   $form = array();
+  $error = false;
+
+  if (variable_get('language_negotiation', LANGUAGE_NEGOTIATION_NONE) != 2) {
+    drupal_set_message(t('The Language Selection Page settings are not available until %setting_name setting is not set to required "%setting_value" value. You should either disable the module or <a href="@setting_url">change your configuration</a>.', array(
+    	'%setting_name' => t('Language negotiation'),
+      '%setting_value' => t('Path prefix with language fallback.'),
+      '@setting_url' => url('admin/settings/language/configure'),
+    )), 'warning');
+  }
+  
+  $lang_list       = language_list('enabled');
+  $lang_list       = $lang_list[1];
+  if (count($lang_list) < 2) {
+    drupal_set_message(t('You should have more than <a href="@setting_url">one language</a> enabled to get the Language Selection Page working.', array(
+      '@setting_url' => url('admin/settings/language'),
+    )), 'warning');
+    $error = true;
+  }
+
+  if ($error) return $form;
 
   $options = array('0' => t('No when language is found from cookie.'), '1' => t('No'), '2' => t('Yes'), );
   $form['i18n_selection_page_enable'] = array(
