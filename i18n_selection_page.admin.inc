@@ -4,22 +4,22 @@ function i18n_selection_page_admin() {
 
   $form = array();
 
-  $options = array('0' => t('No'), '1' => t('Yes'));
+  $options = array('0' => t('No when language is found from cookie.'), '1' => t('No'), '2' => t('Yes'), );
   $form['i18n_selection_page_enable'] = array(
-    '#title' => t('Redirect user to a language selection page if no language is detected ?'),
+    '#title' => t('Redirect user to a language selection page if no language is detected from URL ?'),
     '#type' => 'radios',
     '#default_value' => variable_get('i18n_selection_page_enable', 0),
     '#options' => $options,
-    '#description' => t('Select yes if you want to enable the language selection page when no language is detected from URL.')
+    '#description' => t('Select yes if you want to enable the language selection page when no language is detected from URL and/or Cookie.')
   );
 
-  $options = array('0' => t('No'), '1' => t('Yes'), '2' => t('Yes and bypass the selection page.'));
+  $options = array('0' => t('No'), '1' => t('Yes'));
   $form['i18n_selection_page_use_language_cookie'] = array(
     '#title' => t('Use cookie to remember your language ?'),
     '#type' => 'radios',
     '#default_value' => variable_get('i18n_selection_page_use_language_cookie', 0),
     '#options' => $options,
-    '#description' => t('Select yes if you want to store the language in a cookie. If you want to use the cookie and bypass the selection page, select the third option.')
+    '#description' => t('Select yes if you want to store the language in a cookie.')
   );
 
   $options = array('0' => t('Disabled'), '1' => t('Template in theme'), '2' => 'Template only');
