@@ -4,6 +4,20 @@
  * The install page.
  */
 
+/**
+ * Implementation of hook_uninstall()
+ *
+ * @return void
+ */
+function i18n_selection_page_uninstall() {
+  variable_del('i18n_selection_page_use_language_cookie');
+  variable_del('i18n_selection_page_enable');
+  variable_del('i18n_selection_page_redirect_type');
+  variable_del('i18n_selection_page_blacklisted_paths');
+  variable_del('i18n_selection_page_cookie_lifetime');
+  setcookie(LANGUAGE_COOKIE_KEY, NULL, 0, '/');
+  drupal_set_message(t('The i18n Selection Page variables and cookie has been removed successfully.'));
+}
 
 /**
  * Update settings according to the code.
