@@ -68,6 +68,8 @@ function i18n_selection_page_init() {
     setcookie(LANGUAGE_COOKIE_KEY, NULL, 0, '/');
   }
 
+  if ($lang_from_url) return;
+
   $query = array();
   $query['destination'] = $_GET['q'];
   $query = array_merge((array)$query, (array)$url_parsed['query']);
@@ -75,26 +77,24 @@ function i18n_selection_page_init() {
 
   $destination = NULL;
 
-  if (!$lang_from_url) {
-    switch ($behavior) {
-      case 9:
-      case 10:
-      case 18:
-        $destination = NULL;
-        break;
-      case 17:
-        unset($query['destination']);
-        $destination = $_GET['q'];
-        break;
-      case 12:
-      case 20:
-        $destination = 'language_selection';
-        break;
-    }
+  switch ($behavior) {
+    case 9:
+    case 10:
+    case 18:
+      $destination = NULL;
+      break;
+    case 17:
+      unset($query['destination']);
+      $destination = $_GET['q'];
+      break;
+    case 12:
+    case 20:
+      $destination = 'language_selection';
+      break;
+  }
 
-    if ($destination) {
-      drupal_goto($destination, $query);
-    }
+  if ($destination) {
+    drupal_goto($destination, $query);
   }
 }
 
