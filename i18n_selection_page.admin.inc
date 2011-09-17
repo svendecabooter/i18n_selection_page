@@ -67,7 +67,7 @@ function i18n_selection_page_admin() {
   $form['i18n_selection_page_blacklisted_paths'] = array(
     '#type' => 'textarea',
     '#title' => t('List of paths to blacklist'),
-    '#default_value' => implode("\n", variable_get('i18n_selection_page_blacklisted_paths', array('admin', 'user'))),
+    '#default_value' => implode("\n", variable_get('i18n_selection_page_blacklisted_paths', array('admin', 'user', 'admin/*', 'admin*', 'node/add/*', 'node/*/edit'))),
     '#size' => 10,
     '#description' => t('Write on each line a path to blacklist from Language Selection Page processor')
   );
