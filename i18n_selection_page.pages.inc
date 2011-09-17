@@ -2,7 +2,7 @@
 
 /**
  * Menu callback to display the selection page.
-**/
+ **/
 function i18n_selection_page_selection_page() {
 
   module_load_include('inc', 'i18n_selection_page', 'includes/i18n_selection_page.helpers');
@@ -17,7 +17,7 @@ function i18n_selection_page_selection_page() {
   $query_args = array();
   foreach ($query as $key => $value) {
     $query_args[] = $key . '=' . $value;
-  }  
+  }
   $query_str = implode('&', $query_args);
 
   $nulllang = new stdClass;
@@ -25,6 +25,7 @@ function i18n_selection_page_selection_page() {
   $data['from_link'] = l($link_text, $from, array('query' => $query_str, 'language' => $nulllang));
 
   foreach (language_list() as $prefix => $language) {
+    if (!$language->prefix) continue;
     $link_text = ucfirst(strtolower(t('Continue in ', array(), $language->language))) . $language->native;
     $items[$language->language] = l($link_text, $from, array('query' => $query_str, 'language' => $language));
   }

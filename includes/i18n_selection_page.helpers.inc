@@ -2,10 +2,12 @@
 
 /**
  * Custom function to parse a URL.
-**/
+ *
+ * @return array
+ **/
 function _i18n_selection_page_parse_url_custom() {
 
-  $array_url = parse_url($_REQUEST['q'] .'?'. $_SERVER['QUERY_STRING']);
+  $array_url = parse_url($_REQUEST['q'] . '?' . $_SERVER['QUERY_STRING']);
 
   if (isset($array_url['query'])) {
     parse_str($array_url['query'], $array_url['query']);
@@ -17,8 +19,10 @@ function _i18n_selection_page_parse_url_custom() {
 
 /**
  * Custom function who return the first argument which is not null.
- * If all arguments are null, it returns the defaut lang.
-**/
+ * If all arguments are null, it returns the default lang.
+ *
+ * @return object
+ **/
 function _i18n_resolve_lang() {
   foreach (func_get_args() as $arg) {
     if (!is_null($arg)) {
@@ -30,10 +34,12 @@ function _i18n_resolve_lang() {
 
 /**
  * Custom function who detect the language from URL.
-**/
+ *
+ * @return object
+ **/
 function _i18n_detect_lang_from_url() {
   $url_parsed = _i18n_selection_page_parse_url_custom();
-  $path       = explode('/', $url_parsed['path']);
+  $path = explode('/', $url_parsed['path']);
 
   $lang_list = language_list('enabled');
   $lang_list = $lang_list[1];
@@ -50,7 +56,9 @@ function _i18n_detect_lang_from_url() {
 
 /**
  * Custom function who detect the language from a cookie.
-**/
+ *
+ * @return object
+ **/
 function _i18n_detect_lang_from_cookie() {
   $lang_list = language_list('enabled');
   $lang_list = $lang_list[1];
