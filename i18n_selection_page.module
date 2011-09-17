@@ -55,8 +55,11 @@ function i18n_selection_page_init() {
   module_load_include('inc', 'i18n_selection_page', 'includes/i18n_selection_page.helpers');
 
   $url_parsed = _i18n_selection_page_parse_url_custom();
-  $lang_from_cookie = _i18n_detect_lang_from_cookie();
+
   $lang_from_url = _i18n_detect_lang_from_url();
+  if ($lang_from_url) return;
+
+  $lang_from_cookie = _i18n_detect_lang_from_cookie();
 
   $language = _i18n_resolve_lang($lang_from_url, $lang_from_cookie);
 
@@ -67,8 +70,6 @@ function i18n_selection_page_init() {
   else {
     setcookie(LANGUAGE_COOKIE_KEY, NULL, 0, '/');
   }
-
-  if ($lang_from_url) return;
 
   $query = array();
   $query['destination'] = $_GET['q'];
