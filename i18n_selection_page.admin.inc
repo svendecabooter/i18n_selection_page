@@ -100,7 +100,7 @@ function i18n_selection_page_admin_validate($form, &$form_state) {
 }
 
 function i18n_selection_page_admin_submit($form, &$form_state) {
-  if ($form_state['values']['i18n_selection_page_use_language_cookie'] == 0) {
+  if ($form_state['values']['i18n_selection_page_use_language_cookie'] == 8) {
     setcookie(LANGUAGE_COOKIE_KEY, NULL, 0, '/');
     drupal_set_message(t('I18N Selection Page Cookie removed.'));
   }
