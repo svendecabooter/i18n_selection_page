@@ -1,8 +1,12 @@
 <?php
+/**
+ * @file
+ * The page containing the modules pages.
+ */
 
 /**
  * Menu callback to display the selection page.
- **/
+ */
 function i18n_selection_page_selection_page() {
 
   module_load_include('inc', 'i18n_selection_page', 'includes/i18n_selection_page.helpers');
@@ -26,19 +30,22 @@ function i18n_selection_page_selection_page() {
 
   foreach (language_list() as $prefix => $language) {
     if (!$language->prefix) continue;
-    $link_text = ucfirst(strtolower(t('Continue in ', array(), $language->language))) . $language->native;
+    $link_text = drupal_ucfirst(drupal_strtolower(t('Continue in', array(), $language->language))) . ' ' . $language->native;
     $items[$language->language] = l($link_text, $from, array('query' => $query_str, 'language' => $language));
   }
 
   $data['links'] = $items;
 
-  $redirect_type = variable_get('i18n_selection_page_redirect_type', 0);
+  $redirect_type = variable_get('i18n_selection_page_redirect_type', 64);
+
+  $html = theme('i18n_selection_page', $data);
+
   switch ($redirect_type) {
-    case 1:
-      return theme('i18n_selection_page', $data);
+    case 32:
+      return $html;
       break;
-    case 2:
-      print theme('i18n_selection_page', $data);
+    case 64:
+      print $html;
       exit;
   }
 }

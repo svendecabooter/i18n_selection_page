@@ -10,8 +10,8 @@ function i18n_selection_page_menu() {
   $items = array();
 
   $items['admin/settings/language/i18n/selection_page'] = array(
-    'title' => t('Language selection page'),
-    'description' => t('Configure the language selection page behavior'),
+    'title' => 'Language selection page',
+    'description' => 'Configure the language selection page behavior',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('i18n_selection_page_admin'),
     'access arguments' => array('access administration pages'),
@@ -20,7 +20,7 @@ function i18n_selection_page_menu() {
   );
 
   $items['language_selection'] = array(
-    'description' => t('Language selection page'),
+    'description' => 'Language selection page',
     'page callback' => 'i18n_selection_page_selection_page',
     'access arguments' => array('access content'),
     'file' => 'i18n_selection_page.pages.inc',
@@ -32,20 +32,16 @@ function i18n_selection_page_menu() {
 
 /**
  * Implements hook_init().
- **/
+ */
 function i18n_selection_page_init() {
   global $language;
 
-  if (variable_get('language_negotiation', LANGUAGE_NEGOTIATION_NONE) != 2) {
-    return;
-  }
+  if (variable_get('language_negotiation', LANGUAGE_NEGOTIATION_NONE) != 2) return;
 
   $lang_list = language_list('enabled');
   $lang_list = $lang_list[1];
 
-  if (count($lang_list) < 2) {
-    return;
-  }
+  if (count($lang_list) < 2) return;
 
   $black_paths = variable_get('i18n_selection_page_blacklisted_paths', array());
 
@@ -53,8 +49,8 @@ function i18n_selection_page_init() {
   if ($_GET['q'] == 'language_selection') return;
   if (!isset($_SERVER['SERVER_ADDR'])) return;
 
-  $cookie_behavior = variable_get('i18n_selection_page_use_language_cookie', 0);
-  $select_page_type = variable_get('i18n_selection_page_enable', 0);
+  // This setting is calculate this way so I only have one switch for all.
+  $behavior = (int)variable_get('i18n_selection_page_use_language_cookie', 8) + variable_get('i18n_selection_page_enable', 2);
 
   module_load_include('inc', 'i18n_selection_page', 'includes/i18n_selection_page.helpers');
 
@@ -64,9 +60,11 @@ function i18n_selection_page_init() {
 
   $language = _i18n_resolve_lang($lang_from_url, $lang_from_cookie);
 
-  if ($cookie_behavior == 1) {
+  if (variable_get('i18n_selection_page_use_language_cookie', 8) == 16) {
     $isCookieOk = setcookie(LANGUAGE_COOKIE_KEY, $language->language, time() + variable_get('i18n_selection_page_cookie_lifetime', 60 * 60 * 24 * 30), '/');
-  } else {
+    //drupal_set_message('Cookie set to '.$language->language);
+  }
+  else {
     setcookie(LANGUAGE_COOKIE_KEY, NULL, 0, '/');
   }
 
@@ -75,18 +73,21 @@ function i18n_selection_page_init() {
   $query = array_merge((array)$query, (array)$url_parsed['query']);
   unset($query['q']);
 
-  $destination = FALSE;
+  $destination = NULL;
 
   if (!$lang_from_url) {
-    switch ($select_page_type) {
-      case 0:
-        unset($query['destination']);
-        $destination = (isset($lang_from_cookie)) ? $_GET['q'] : NULL;
+    switch ($behavior) {
+      case 9:
+      case 10:
+      case 18:
+        $destination = NULL;
         break;
-      case 1:
+      case 17:
+        unset($query['destination']);
         $destination = $_GET['q'];
         break;
-      case 2:
+      case 12:
+      case 20:
         $destination = 'language_selection';
         break;
     }
@@ -99,7 +100,7 @@ function i18n_selection_page_init() {
 
 /**
  * Implements hook_theme().
- **/
+ */
 function i18n_selection_page_theme() {
   return array(
     'i18n_selection_page' => array(

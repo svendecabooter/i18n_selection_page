@@ -1,5 +1,17 @@
 <?php
+/**
+ * @file
+ * The install page.
+ */
 
+
+/**
+ * Update settings according to the code.
+ * We do no need hook_boot() anymore so we remove the code
+ * who updates the system table each time.
+ *
+ * @return array
+ */
 function i18n_selection_page_update_6001() {
   if (variable_get('i18n_selection_page_use_language_cookie', 0) == 2) {
     variable_set('i18n_selection_page_enable', 0);
@@ -7,6 +19,17 @@ function i18n_selection_page_update_6001() {
   }
 
   update_sql("UPDATE {system} SET bootstrap=0 WHERE name = 'i18n_selection_page'");
-  
+
+  return array();
+}
+
+/**
+ * Users MUST configure the module again after this update.
+ *
+ * @return array
+ */
+function i18n_selection_page_update_6002() {
+  drupal_set_message(t("You must re configure the <a href='@setting_url'>language selection page settings</a>.", array('@setting_url' => url('admin/settings/language/i18n/selection_page'))), "warning");
+
   return array();
 }
