@@ -15,6 +15,10 @@ function i18n_selection_page_admin() {
   $form = array();
   $error = FALSE;
 
+  $lang_default = language_default();
+  $lang_list = language_list('enabled');
+  $lang_list = $lang_list[1];
+
   if (variable_get('language_negotiation', LANGUAGE_NEGOTIATION_NONE) != 2) {
     drupal_set_message(t('The Language Selection Page settings are not available until %setting_name setting is not set to required "%setting_value" value. You should either disable the module or <a href="@setting_url">change your configuration</a>.', array(
                                                                                                                                                                                                                                                                  '%setting_name' => t('Language negotiation'),
@@ -24,9 +28,6 @@ function i18n_selection_page_admin() {
     $error = TRUE;
   }
 
-  $lang_list = language_list('enabled');
-  $lang_list = $lang_list[1];
-
   if (count($lang_list) < 2) {
     drupal_set_message(t('You should have more than <a href="@setting_url">one language</a> enabled to get the Language Selection Page working.', array(
                                                                                                                                                        '@setting_url' => url('admin/settings/language'),
@@ -35,6 +36,10 @@ function i18n_selection_page_admin() {
   }
 
   if ($error) return $form;
+
+  if (!$lang_default->prefix) {
+    drupal_set_message(t('You should add a path prefix to <a href="@language_url">language @language_name</a> if you want to have it enabled in the Language Selection Page.', array('@language_url' => url('admin/settings/language/edit/' . $lang_default->language), '@language_name' => $lang_default->name)), 'warning');
+  }
 
   $options = array('1' => t('No but redirect if language is found from cookie.'), '2' => t('No'), '4' => t('Yes'));
   $form['i18n_selection_page_enable'] = array(
@@ -84,7 +89,6 @@ function i18n_selection_page_admin() {
   $form['#submit'][] = 'i18n_selection_page_admin_submit';
 
   return system_settings_form($form);
-
 }
 
 function i18n_selection_page_admin_validate($form, &$form_state) {
