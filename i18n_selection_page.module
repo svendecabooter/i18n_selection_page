@@ -57,7 +57,6 @@ function i18n_selection_page_init() {
   $url_parsed = _i18n_selection_page_parse_url_custom();
 
   $lang_from_url = _i18n_detect_lang_from_url();
-
   $lang_from_cookie = _i18n_detect_lang_from_cookie();
 
   $language = _i18n_resolve_lang($lang_from_url, $lang_from_cookie);
@@ -88,7 +87,10 @@ function i18n_selection_page_init() {
     case 17:
       unset($query['destination']);
       $destination = $_GET['q'];
-      break;
+      if ($lang_from_cookie) {
+        unset($query['destination']);
+        break;
+      }
     case 12:
     case 20:
       $destination = 'language_selection';
