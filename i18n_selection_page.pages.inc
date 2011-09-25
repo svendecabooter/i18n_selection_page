@@ -10,8 +10,7 @@
 function i18n_selection_page_selection_page() {
   module_load_include('inc', 'i18n_selection_page', 'includes/i18n_selection_page.helpers');
 
-  // Must include that file if using features.
-  include('includes/language.inc');
+  drupal_init_language();
 
   $url_parsed = _i18n_selection_page_parse_url_custom();
   $query = $url_parsed['query'];
