@@ -86,7 +86,6 @@ function i18n_selection_page_init() {
       $destination = NULL;
       break;
     case 17:
-      unset($query['destination']);
       $destination = $_GET['q'];
       if ($lang_from_cookie) {
         unset($query['destination']);
@@ -98,9 +97,7 @@ function i18n_selection_page_init() {
       break;
   }
 
-
   if ($destination) {
-    //echo "Redirect to: ".url($destination, $query);
     drupal_goto($destination, $query);
   }
 }
@@ -121,24 +118,54 @@ function i18n_selection_page_theme() {
  * Implementation of hook_requirements().
  */
 function i18n_selection_page_requirements($phase) {
-  $lang_default = language_default();
+  module_load_include('inc', 'i18n_selection_page', 'includes/i18n_selection_page.helpers');
+  $messages = _i18n_selection_page_error_messages();
+  $lang_list = language_list('enabled');
   $t = get_t();
+
+  $language_count = _i18n_selection_page_check_language_count();
 
   $requirements = array();
 
-  if (!$lang_default->prefix) {
-    $link = l($lang_default->native, 'admin/settings/language/edit/' . $lang_default->language);
+  if ($language_count['db'] != $language_count['vars']) {
     $requirements['i18n_selection_page'] = array(
-      'title' => 'I18N Selection Page',
-      'value' => $t('You should enable a prefix on the default language:') . ' ' . $link,
-      'severity' => REQUIREMENT_WARNING
-    );
+       'title' => 'I18N Selection Page',
+       'value' => $t($messages['language_count'], array('@language_count_db'=>$language_count['db'], '@language_count_vars'=>$language_count['vars'])),
+       'severity' => REQUIREMENT_ERROR
+     );
+    return $requirements;
   }
-  else {
+
+  if ($language_count['db'] > 1) {
+
+    $lang_list_without_prefix = array();
+    foreach ($lang_list[1] as $lang) {
+      if (empty($lang->prefix)) {
+        $lang_list_without_prefix[$lang->language] = $t($messages['language_prefix'], array('@language_url'=>url('admin/settings/language/edit/' . $lang->language), '@language_name' => $lang->name));
+      }
+    }
+
+    if (count($lang_list_without_prefix) >= 1) {
+      $requirements['i18n_selection_page'] = array(
+        'title' => 'I18N Selection Page',
+        'value' => implode('<br/>', $lang_list_without_prefix),
+        'severity' => REQUIREMENT_WARNING
+      );
+
+    }
+    else {
+      $requirements['i18n_selection_page'] = array(
+        'title' => 'I18N Selection Page',
+        'value' => t($messages['language_all_good']),
+        'severity' => REQUIREMENT_OK
+      );
+    }
+  } else {
+    $link = url('admin/settings/language');
     $requirements['i18n_selection_page'] = array(
       'title' => 'I18N Selection Page',
-      'value' => $t('All your enabled languages have language prefix, all good.'),
-      'severity' => REQUIREMENT_OK
+      'value' => $t($messages['language_only_one'], array('@link' => $link)),
+      'severity' => REQUIREMENT_WARNING
     );
   }
 

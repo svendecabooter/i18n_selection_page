@@ -3,42 +3,49 @@
  * @file
  * The admin page of the language selection page module.
  */
-
-
 /**
  * The admin page form.
  *
  * @return array
  */
 function i18n_selection_page_admin() {
+  module_load_include('inc', 'i18n_selection_page', 'includes/i18n_selection_page.helpers');
 
   $form = array();
   $error = FALSE;
 
-  $lang_default = language_default();
+  $messages = _i18n_selection_page_error_messages();
   $lang_list = language_list('enabled');
-  $lang_list = $lang_list[1];
+
+  $language_count = _i18n_selection_page_check_language_count();
+  if ($language_count['db'] != $language_count['vars']) {
+    drupal_set_message(t($messages['language_count'], array('@language_count_db' => $language_count['db'],
+                                                            '@language_count_vars' => $language_count['vars'])), 'error');
+    return $form;
+  }
 
   if (variable_get('language_negotiation', LANGUAGE_NEGOTIATION_NONE) != 2) {
-    drupal_set_message(t('The Language Selection Page settings are not available until %setting_name setting is not set to required "%setting_value" value. You should either disable the module or <a href="@setting_url">change your configuration</a>.', array(
-                                                                                                                                                                                                                                                                 '%setting_name' => t('Language negotiation'),
-                                                                                                                                                                                                                                                                 '%setting_value' => t('Path prefix with language fallback.'),
-                                                                                                                                                                                                                                                                 '@setting_url' => url('admin/settings/language/configure'),
-                                                                                                                                                                                                                                                            )), 'warning');
+    drupal_set_message(t($messages['language_negotiation'], array(
+                                                                 '%setting_name' => t('Language negotiation'),
+                                                                 '%setting_value' => t('Path prefix with language fallback.'),
+                                                                 '@setting_url' => url('admin/settings/language/configure'),
+                                                            )), 'warning');
     $error = TRUE;
   }
 
-  if (count($lang_list) < 2) {
-    drupal_set_message(t('You should have more than <a href="@setting_url">one language</a> enabled to get the Language Selection Page working.', array(
-                                                                                                                                                       '@setting_url' => url('admin/settings/language'),
-                                                                                                                                                  )), 'warning');
+  if ($language_count['db'] < 2) {
+    drupal_set_message(t($messages['language_enabled'], array(
+                                                             '@setting_url' => url('admin/settings/language'),
+                                                        )), 'warning');
     $error = TRUE;
   }
 
   if ($error) return $form;
 
-  if (!$lang_default->prefix) {
-    drupal_set_message(t('You should add a path prefix to <a href="@language_url">language @language_name</a> if you want to have it enabled in the Language Selection Page.', array('@language_url' => url('admin/settings/language/edit/' . $lang_default->language), '@language_name' => $lang_default->name)), 'warning');
+  foreach ($lang_list[1] as $lang) {
+    if (empty($lang->prefix)) {
+      drupal_set_message(t($messages['language_prefix'], array('@language_url'=>url('admin/settings/language/edit/' . $lang->language), '@language_name' => $lang->name)), 'warning');
+    }
   }
 
   $options = array('1' => t('No but redirect if language is found from cookie.'), '2' => t('No'), '4' => t('Yes'));
@@ -49,7 +56,6 @@ function i18n_selection_page_admin() {
     '#options' => $options,
     '#description' => t('Select yes if you want to enable the language selection page when no language is detected from URL and/or Cookie.')
   );
-
   $options = array('8' => t('No'), '16' => t('Yes'));
   $form['i18n_selection_page_use_language_cookie'] = array(
     '#title' => t('Use a cookie to remember your language ?'),
@@ -58,7 +64,6 @@ function i18n_selection_page_admin() {
     '#options' => $options,
     '#description' => t('Select yes if you want to store the language in a cookie.<br/>The cookie is <i>' . LANGUAGE_COOKIE_KEY . '</i>')
   );
-
   $options = array('32' => t('Template in theme'), '64' => 'Template only');
   $form['i18n_selection_page_redirect_type'] = array(
     '#title' => t('Select the way the Selection Page should work'),
@@ -68,7 +73,6 @@ function i18n_selection_page_admin() {
     '#options' => $options,
     '#description' => t('<b>Template in theme</b>: Insert the Language Selection Page in the template in the current theme.<br/><b>Template only</b>: Display the Selection Page template only.<br/>Create a file named <i>i18n_selection_page.tpl.php</i> in your theme directory if you want to override it.')
   );
-
   $form['i18n_selection_page_blacklisted_paths'] = array(
     '#type' => 'textarea',
     '#title' => t('List of paths to blacklist'),
@@ -76,7 +80,6 @@ function i18n_selection_page_admin() {
     '#size' => 10,
     '#description' => t('Write on each line a path to blacklist from Language Selection Page processor')
   );
-
   $form['i18n_selection_page_cookie_lifetime'] = array(
     '#type' => 'textfield',
     '#field_suffix' => t('Seconds'),
@@ -93,11 +96,9 @@ function i18n_selection_page_admin() {
 
 function i18n_selection_page_admin_validate($form, &$form_state) {
   $form_state['values']['i18n_selection_page_blacklisted_paths'] = explode("\n", trim($form_state['values']['i18n_selection_page_blacklisted_paths']));
-
   if ($form_state['values']['i18n_selection_page_enable'] == 1 && $form_state['values']['i18n_selection_page_use_language_cookie'] == 8) {
     form_set_error('i18n_selection_page_use_language_cookie', t('Enable cookie if you want to use cookie.'));
   }
-
   if ($form_state['values']['i18n_selection_page_cookie_lifetime'] <= 0) {
     form_set_error('i18n_selection_page_cookie_lifetime', t('The cookie lifetime must be greater than zero.'));
   }
@@ -108,4 +109,15 @@ function i18n_selection_page_admin_submit($form, &$form_state) {
     setcookie(LANGUAGE_COOKIE_KEY, NULL, 0, '/');
     drupal_set_message(t('I18N Selection Page Cookie removed.'));
   }
+  /*
+  include('includes/locale.inc');
+
+  $aform_state = array();
+  $aform = drupal_retrieve_form('locale_languages_overview_form', &$aform_state);
+  dpm($aform);
+  $aform['#submit'] = array('locale_languages_overview_form_submit');
+
+  drupal_execute('locale_languages_overview_form', &$aform);
+  dpm($aform);
+  */
 }
