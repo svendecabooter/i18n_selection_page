@@ -2,13 +2,11 @@
 
 // This is the name of the cookie. You can change it if you want.
 define('LANGUAGE_COOKIE_KEY', 'language_prefix');
-
 /**
  * Implements hook_menu().
  */
 function i18n_selection_page_menu() {
   $items = array();
-
   $items['admin/settings/language/i18n/selection_page'] = array(
     'title' => 'Language selection page',
     'description' => 'Configure the language selection page behavior',
@@ -18,7 +16,6 @@ function i18n_selection_page_menu() {
     'file' => 'i18n_selection_page.admin.inc',
     'type' => MENU_LOCAL_TASK
   );
-
   $items['language_selection'] = array(
     'description' => 'Language selection page',
     'page callback' => 'i18n_selection_page_selection_page',
@@ -26,7 +23,6 @@ function i18n_selection_page_menu() {
     'file' => 'i18n_selection_page.pages.inc',
     'type' => MENU_NORMAL_ITEM
   );
-
   return $items;
 }
 
@@ -36,32 +32,21 @@ function i18n_selection_page_menu() {
 function i18n_selection_page_init() {
   global $language;
   drupal_init_language();
-
   if (variable_get('language_negotiation', LANGUAGE_NEGOTIATION_NONE) != 2) return;
-
   $lang_list = language_list('enabled');
   $lang_list = $lang_list[1];
-
   if (count($lang_list) < 2) return;
-
   $black_paths = variable_get('i18n_selection_page_blacklisted_paths', array());
-
   if ((bool)drupal_match_path($_GET['q'], implode("\r\n", $black_paths))) return;
   if ($_GET['q'] == 'language_selection') return;
   if (!isset($_SERVER['SERVER_ADDR'])) return;
-
   // This setting is calculate this way so I only have one switch for all.
   $behavior = (int)variable_get('i18n_selection_page_use_language_cookie', 8) + variable_get('i18n_selection_page_enable', 2);
-
   module_load_include('inc', 'i18n_selection_page', 'includes/i18n_selection_page.helpers');
-
   $url_parsed = _i18n_selection_page_parse_url_custom();
-
   $lang_from_url = _i18n_detect_lang_from_url();
   $lang_from_cookie = _i18n_detect_lang_from_cookie();
-
   $language = _i18n_resolve_lang($lang_from_url, $lang_from_cookie);
-
   if (variable_get('i18n_selection_page_use_language_cookie', 8) == 16) {
     $isCookieOk = setcookie(LANGUAGE_COOKIE_KEY, $language->language, time() + variable_get('i18n_selection_page_cookie_lifetime', 60 * 60 * 24 * 30), '/');
     //drupal_set_message('Cookie set to '.$language->language);
@@ -69,16 +54,12 @@ function i18n_selection_page_init() {
   else {
     setcookie(LANGUAGE_COOKIE_KEY, NULL, 0, '/');
   }
-
   if ($lang_from_url) return;
-
   $query = array();
   $query['destination'] = $_GET['q'];
   $query = array_merge((array)$query, (array)$url_parsed['query']);
   unset($query['q']);
-
   $destination = NULL;
-
   switch ($behavior) {
     case 9:
     case 10:
@@ -96,7 +77,6 @@ function i18n_selection_page_init() {
       $destination = 'language_selection';
       break;
   }
-
   if ($destination) {
     drupal_goto($destination, $query);
   }
@@ -122,36 +102,29 @@ function i18n_selection_page_requirements($phase) {
   $messages = _i18n_selection_page_error_messages();
   $lang_list = language_list('enabled');
   $t = get_t();
-
   $language_count = _i18n_selection_page_check_language_count();
-
   $requirements = array();
-
   if ($language_count['db'] != $language_count['vars']) {
     $requirements['i18n_selection_page'] = array(
-       'title' => 'I18N Selection Page',
-       'value' => $t($messages['language_count'], array('@language_count_db'=>$language_count['db'], '@language_count_vars'=>$language_count['vars'])),
-       'severity' => REQUIREMENT_ERROR
-     );
+      'title' => 'I18N Selection Page',
+      'value' => $t($messages['language_count'], array('@language_count_db' => $language_count['db'], '@language_count_vars' => $language_count['vars'])),
+      'severity' => REQUIREMENT_ERROR
+    );
     return $requirements;
   }
-
   if ($language_count['db'] > 1) {
-
     $lang_list_without_prefix = array();
     foreach ($lang_list[1] as $lang) {
       if (empty($lang->prefix)) {
-        $lang_list_without_prefix[$lang->language] = $t($messages['language_prefix'], array('@language_url'=>url('admin/settings/language/edit/' . $lang->language), '@language_name' => $lang->name));
+        $lang_list_without_prefix[$lang->language] = $t($messages['language_prefix'], array('@language_url' => url('admin/settings/language/edit/' . $lang->language), '@language_name' => $lang->name));
       }
     }
-
     if (count($lang_list_without_prefix) >= 1) {
       $requirements['i18n_selection_page'] = array(
         'title' => 'I18N Selection Page',
         'value' => implode('<br/>', $lang_list_without_prefix),
         'severity' => REQUIREMENT_WARNING
       );
-
     }
     else {
       $requirements['i18n_selection_page'] = array(
@@ -168,6 +141,5 @@ function i18n_selection_page_requirements($phase) {
       'severity' => REQUIREMENT_WARNING
     );
   }
-
   return $requirements;
 }
