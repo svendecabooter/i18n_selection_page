@@ -12,9 +12,9 @@
   <div class="i18n_selection_page_body_inner">
     <p>Hello,</p>
 
-    <p>You are coming from <?php print $from_link_html; ?></p>
+    <p>You are coming from <?php print $from_link['html']; ?></p>
 
     <p>You should go to:</p>
-    <?php print $to_links_html; ?>
+    <?php print $links['html']; ?>
   </div>
 </div>
