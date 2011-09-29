@@ -1,5 +1,5 @@
-core = "6.x"
+core = "7.x"
 description = "Provides an additional language negociation fallback using a selection page and save language in a cookie."
-name = "Language Selection Page"
+name = "i18n Selection Page"
 package = Multilanguage
 dependencies[] = i18n

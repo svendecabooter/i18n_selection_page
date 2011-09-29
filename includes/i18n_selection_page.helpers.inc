@@ -9,6 +9,8 @@
  * @return array
  */
 function _i18n_selection_page_parse_url_custom() {
+
+
   $array_url = parse_url($_REQUEST['q'] . '?' . $_SERVER['QUERY_STRING']);
   if (isset($array_url['query'])) {
     parse_str($array_url['query'], $array_url['query']);

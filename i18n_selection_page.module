@@ -2,22 +2,25 @@
 
 // This is the name of the cookie. You can change it if you want.
 define('LANGUAGE_COOKIE_KEY', 'language_prefix');
+
+define('LANGUAGE_NEGOTIATION_SELECTION_PAGE', 'language-selection-page');
+
 /**
  * Implements hook_menu().
  */
 function i18n_selection_page_menu() {
   $items = array();
-
-  $items['admin/settings/language/i18n/selection_page'] = array(
-    'title' => 'Language selection page',
-    'description' => 'Configure the language selection page behavior',
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('i18n_selection_page_admin'),
-    'access arguments' => array('access administration pages'),
-    'file' => 'i18n_selection_page.admin.inc',
-    'type' => MENU_LOCAL_TASK
-  );
-
+  /*
+    $items['admin/config/regional/i18n/selection_page'] = array(
+      'title' => 'Language selection page',
+      'description' => 'Configure the language selection page behavior',
+      'page callback' => 'drupal_get_form',
+      'page arguments' => array('i18n_selection_page_admin'),
+      'access arguments' => array('access administration pages'),
+      'file' => 'i18n_selection_page.admin.inc',
+      'type' => MENU_LOCAL_TASK
+    );
+  */
   $items['language_selection'] = array(
     'description' => 'Language selection page',
     'page callback' => 'i18n_selection_page_selection_page',
@@ -29,10 +32,135 @@ function i18n_selection_page_menu() {
   return $items;
 }
 
+function i18n_selection_page_language_types_info() {
+
+}
+
+/**
+ * Implementation of hook_language_negotiation_info().
+ *
+ * @return void
+ */
+function i18n_selection_page_language_negotiation_info() {
+  global $conf, $language;
+
+  $language_providers[LANGUAGE_NEGOTIATION_SELECTION_PAGE] = array(
+    'types' => array(LANGUAGE_TYPE_CONTENT, LANGUAGE_TYPE_INTERFACE, LANGUAGE_TYPE_URL),
+    'callbacks' => array(
+      'language' => 'i18n_selection_page_language_from_url',
+      'switcher' => 'i18n_selection_page_switcher_language_selection',
+      'url_rewrite' => 'i18n_selection_page_url_rewrite_selection_page'
+    ),
+    'file' => drupal_get_path('module', 'i18n_selection_page').'/i18n_selection_page.module',
+    'weight' => 50,
+    'name' => t('Selection Page'),
+    'description' => t('Use a Selection Page to the visitor to choose it\'s language.'),
+    'config' => 'admin/config/regional/language/configure/selection_page'
+  );
+
+  return $language_providers;
+}
+
+/**
+ * Return the URL language switcher block. Translation links may be provided by
+ * other modules.
+ */
+function i18n_selection_page_switcher_language_selection($type, $path) {
+  $languages = language_list('enabled');
+  $links = array();
+
+  foreach ($languages[1] as $language) {
+    $links[$language->language] = array(
+      'href'       => $path,
+      'title'      => $language->native,
+      'language'   => $language,
+      'attributes' => array('class' => array('language-link')),
+    );
+  }
+
+  return $links;
+}
+
+function i18n_selection_page_url_rewrite_selection_page(&$path, &$options) {
+  static $drupal_static_fast;
+  if (!isset($drupal_static_fast)) {
+    $drupal_static_fast['languages'] = &drupal_static(__FUNCTION__);
+  }
+  $languages = &$drupal_static_fast['languages'];
+
+  if (!isset($languages)) {
+    $languages = language_list('enabled');
+    $languages = array_flip(array_keys($languages[1]));
+  }
+
+  if (isset($options['language'])) {
+        if (!empty($options['language']->prefix)) {
+          $options['prefix'] = $options['language']->prefix . '/';
+        }
+    }
+
+}
+
+function i18n_selection_page_language_from_url($languages) {
+  include('includes/common.inc');
+  include('includes/path.inc');
+  include('includes/file.inc');
+  include('includes/unicode.inc');
+  include('includes/locale.inc');
+
+  module_load_include('inc', 'i18n_selection_page', 'includes/i18n_selection_page.helpers');
+  module_load_include('module', 'node');
+  module_load_include('module', 'translation');
+  module_load_include('inc', 'field', 'field.attach');
+
+  $language_from_url = FALSE;
+
+  list($language, $_GET['q']) = language_url_split_prefix(isset($_GET['q']) ? $_GET['q'] : NULL, $languages);
+  if ($language !== FALSE) {
+    $language_from_url = $language->language;
+  }
+
+  if ($_GET['q'] == 'language_selection') return;
+  if (!isset($_SERVER['SERVER_ADDR'])) return;
+
+  $query = drupal_get_query_parameters();
+  $query['destination'] = $_GET['q'];
+
+/*
+  dpm(request_uri(), 'Request URI');
+  dpm(request_path(), 'Request PATH');
+  dpm(drupal_get_query_parameters(), 'Query Parameters');
+*/
+  $url = url('language_selection', array('query'=>$query, 'absolute'=>TRUE));
+
+  if (empty($language_from_url)) {
+    header("Location: $url");
+    exit;
+  }
+ 
+}
+
 /**
  * Implements hook_init().
  */
+
 function i18n_selection_page_init() {
+  global $conf, $language;
+  include_once DRUPAL_ROOT . '/includes/locale.inc';
+
+  /*
+  if (!language_negotiation_get_any(LANGUAGE_NEGOTIATION_SELECTION_PAGE)) {
+    dpm('LANGUAGE_NEGOTIATION_SELECTION_PAGE not enabled.');
+  } else {
+    dpm('LANGUAGE_NEGOTIATION_SELECTION_PAGE enabled.');
+  }
+  */
+  
+  //dpm(language_types());
+
+  //dpm($GLOBALS);
+}
+/*
   global $language;
   if (variable_get('language_negotiation', LANGUAGE_NEGOTIATION_NONE) != 2) return;
 
@@ -100,6 +228,7 @@ function i18n_selection_page_init() {
 /**
  * Implements hook_theme().
  */
+
 function i18n_selection_page_theme() {
   return array(
     'i18n_selection_page' => array(
@@ -117,9 +246,10 @@ function i18n_selection_page_theme() {
   );
 }
 
-/*
+/**
  * Implementation of hook_requirements().
  */
+/*
 function i18n_selection_page_requirements($phase) {
   module_load_include('inc', 'i18n_selection_page', 'includes/i18n_selection_page.helpers');
 
@@ -183,3 +313,4 @@ function i18n_selection_page_requirements($phase) {
 
   return $requirements;
 }
+*/
