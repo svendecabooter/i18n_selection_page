@@ -10,17 +10,17 @@ define('LANGUAGE_NEGOTIATION_SELECTION_PAGE', 'language-selection-page');
  */
 function i18n_selection_page_menu() {
   $items = array();
-  /*
-    $items['admin/config/regional/i18n/selection_page'] = array(
+
+    $items['admin/config/regional/language/configure/selection_page'] = array(
       'title' => 'Language selection page',
       'description' => 'Configure the language selection page behavior',
       'page callback' => 'drupal_get_form',
       'page arguments' => array('i18n_selection_page_admin'),
-      'access arguments' => array('access administration pages'),
+      'access arguments' => array('administer languages'),
       'file' => 'i18n_selection_page.admin.inc',
-      'type' => MENU_LOCAL_TASK
+      'type' => MENU_VISIBLE_IN_BREADCRUMB
     );
-  */
+  
   $items['language_selection'] = array(
     'description' => 'Language selection page',
     'page callback' => 'i18n_selection_page_selection_page',

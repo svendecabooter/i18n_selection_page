@@ -32,11 +32,10 @@ function i18n_selection_page_selection_page() {
 
   $data['content'] = theme('i18n_selection_page_body', $data);
 
-  $html = theme('i18n_selection_page_body', $data);
+  $html = theme('i18n_selection_page', $data);
 
-  //dpm($html, 'html');
-
-  return $html;
+  echo $html;
+  exit;
 }
 
 function i18n_selection_page_preprocess_i18n_selection_page(&$vars) {
@@ -47,7 +46,6 @@ function i18n_selection_page_preprocess_i18n_selection_page(&$vars) {
   $vars['styles']  = drupal_get_css();
   $vars['scripts'] = drupal_get_js();
   $vars['title']   = "Language selection";
-  $vars['content'] = $vars['data']['content'];
 }
 
 function i18n_selection_page_preprocess_i18n_selection_page_body(&$vars) {

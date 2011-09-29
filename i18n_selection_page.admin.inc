@@ -11,42 +11,6 @@
 function i18n_selection_page_admin() {
   module_load_include('inc', 'i18n_selection_page', 'includes/i18n_selection_page.helpers');
 
-  $form  = array();
-  $error = FALSE;
-  $messages  = _i18n_selection_page_error_messages();
-  $language_count = _i18n_selection_page_check_language_count();
-
-  if ($language_count['db'] != $language_count['vars']) {
-    drupal_set_message(t($messages['language_count'], array('@language_count_db' => $language_count['db'],
-                                                           '@language_count_vars' => $language_count['vars'])), 'error');
-    return $form;
-  }
-
-  if (variable_get('language_negotiation', LANGUAGE_NEGOTIATION_NONE) != 2) {
-    drupal_set_message(t($messages['language_negotiation'], array(
-                                                                 '%setting_name' => t('Language negotiation'),
-                                                                 '%setting_value' => t('Path prefix with language fallback.'),
-                                                                 '@setting_url' => url('admin/settings/language/configure'),
-                                                            )), 'warning');
-    $error = TRUE;
-  }
-
-  if ($language_count['db'] < 2) {
-    drupal_set_message(t($messages['language_enabled'], array(
-                                                             '@setting_url' => url('admin/settings/language'),
-                                                        )), 'warning');
-    $error = TRUE;
-  }
-
-  if ($error) return $form;
-
-  $lang_list = language_list('enabled');
-  foreach ($lang_list[1] as $lang) {
-    if (empty($lang->prefix)) {
-      drupal_set_message(t($messages['language_prefix'], array('@language_url' => url('admin/settings/language/edit/' . $lang->language), '@language_name' => $lang->name)), 'warning');
-    }
-  }
-
   $options = array('1' => t('No but redirect if language is found from cookie.'), '2' => t('No'), '4' => t('Yes'));
   $form['i18n_selection_page_enable'] = array(
     '#title' => t('Redirect to a language selection page if no language is detected from URL and/or Cookie ?'),

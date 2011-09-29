@@ -16,9 +16,6 @@
     <title><?php print $title ?></title>
     <?php print $styles; ?>
     <?php print $scripts; ?>
-    <!--[if lt IE 7]>
-      <?php print phptemplate_get_ie_styles(); ?>
-    <![endif]-->
   </head>
   <body class='i18n_selection_page'>
         <?php print $content; ?>
