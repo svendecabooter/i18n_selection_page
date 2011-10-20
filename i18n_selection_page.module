@@ -46,7 +46,7 @@ function i18n_selection_page_language_negotiation_info() {
     'weight' => 50,
     'name' => t('Selection Page'),
     'description' => t('Use a Selection Page to the visitor to choose it\'s language.'),
-    'config' => 'admin/config/regional/language/configure/selection_page'
+    //'config' => 'admin/config/regional/language/configure/selection_page'
   );
   return $language_providers;
 }
@@ -57,37 +57,27 @@ function i18n_selection_page_language_negotiation_info() {
 function i18n_selection_page_init() {
   require_once('./includes/language.inc');
 
-  if (!language_negotiation_get_any(LANGUAGE_NEGOTIATION_SELECTION_PAGE)) {
-    //drupal_set_message("i18n selection page disabled.");
-    return TRUE;
-  }
-
-  $language = $GLOBALS['language'];
   $error = FALSE;
+  $language = $GLOBALS['language'];
 
   // Some checks
+  if (!language_negotiation_get_any(LANGUAGE_NEGOTIATION_SELECTION_PAGE)) $error = TRUE;
   if ($_GET['q'] == 'language_selection') $error = TRUE;
   if (!isset($_SERVER['SERVER_ADDR'])) $error = TRUE;
-
-  if (!isset($language->provider) || $language->provider != LOCALE_LANGUAGE_NEGOTIATION_URL_FALLBACK) return;
-
-  // Work on query
-  $query = drupal_get_query_parameters();
-  $query['destination'] = $_GET['q'];
+  if (!isset($language->provider) || $language->provider != LOCALE_LANGUAGE_NEGOTIATION_URL_FALLBACK) $error = TRUE;
 
   if (!$error) {
+    $query = drupal_get_query_parameters();
+    $query['destination'] = $_GET['q'];
     //$url = url('language_selection', array('query' => $query, 'absolute' => FALSE, 'language' => LANGUAGE_NONE));
     //drupal_set_message("Redirect to $url",'warning');
     drupal_goto('language_selection', array('query' => $query, 'absolute' => FALSE, 'language' => LANGUAGE_NONE));
-    //header("Location: $url");
-    //exit;
   }
 }
 
 /**
-* Implements hook_theme().
-*/
-
+ * Implements hook_theme().
+ */
 function i18n_selection_page_theme() {
   return array(
     'i18n_selection_page' => array(
