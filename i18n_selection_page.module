@@ -57,9 +57,8 @@ function i18n_selection_page_language_negotiation_info() {
 function i18n_selection_page_init() {
   require_once('./includes/language.inc');
 
-
   if (!language_negotiation_get_any(LANGUAGE_NEGOTIATION_SELECTION_PAGE)) {
-    drupal_set_message("i18n selection page disabled.");
+    //drupal_set_message("i18n selection page disabled.");
     return TRUE;
   }
 
@@ -75,7 +74,6 @@ function i18n_selection_page_init() {
   // Work on query
   $query = drupal_get_query_parameters();
   $query['destination'] = $_GET['q'];
-
 
   if (!$error) {
     //$url = url('language_selection', array('query' => $query, 'absolute' => FALSE, 'language' => LANGUAGE_NONE));
