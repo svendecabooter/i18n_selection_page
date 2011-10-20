@@ -29,16 +29,12 @@ function i18n_selection_page_menu() {
   return $items;
 }
 
-function i18n_selection_page_language_types_info() {
-}
-
 /**
  * Implementation of hook_language_negotiation_info().
  *
  * @return void
  */
 function i18n_selection_page_language_negotiation_info() {
-
   $language_providers[LANGUAGE_NEGOTIATION_SELECTION_PAGE] = array(
     'types' => array(LANGUAGE_TYPE_CONTENT, LANGUAGE_TYPE_INTERFACE, LANGUAGE_TYPE_URL),
     'callbacks' => array(
@@ -52,68 +48,8 @@ function i18n_selection_page_language_negotiation_info() {
     'description' => t('Use a Selection Page to the visitor to choose it\'s language.'),
     'config' => 'admin/config/regional/language/configure/selection_page'
   );
-
   return $language_providers;
 }
-
-function i18n_selection_page_language_negotiation_info_alter(array &$language_providers) {
-  static $set = NULL;
-
-  $types = language_types();
-
-  if ($set == NULL) {
-    $language_provider = $language_providers;
-    //echo "<pre>".print_r($language_providers, 1)."</pre>";
-    //$language_providers['LANGUAGE_NEGOTIATION_SELECTION_PAGE']['callbacks']['language'] = _i18n_selection_page_cb();
-  }
-}
-
-function i18n_selection_page_url_rewrite_selection_page(&$path, &$options) {
-  static $drupal_static_fast;
-  if (!isset($drupal_static_fast)) {
-    $drupal_static_fast['languages'] = &drupal_static(__FUNCTION__);
-  }
-  $languages = &$drupal_static_fast['languages'];
-
-  if (!isset($languages)) {
-    $languages = language_list('enabled');
-    $languages = array_flip(array_keys($languages[1]));
-  }
-
-  if (isset($options['language'])) {
-    if (!empty($options['language']->prefix)) {
-      $options['prefix'] = $options['language']->prefix . '/';
-    }
-  }
-}
-
-// Faire un alter du premier hook qui trouve le language et analyser l'url à partir de là.
-// Ensuite continuer le process.
-
-function i18n_selection_page_language_from_url($languages) {
-  // Detect language from URL
-  $language_from_url = FALSE;
-  list($language, $_GET['q']) = language_url_split_prefix(isset($_GET['q']) ? request_path() : NULL, $languages);
-  if ($language !== FALSE) {
-    $language_from_url = $language->language;
-    //drupal_set_message("Language from url found: " . $language->language);
-    return $language_from_url;
-  } else {
-    //drupal_set_message("No language found from url.");
-    return LANGUAGE_NONE;
-    //return language_default()->language;
-  }
-}
-/*
-function _i18n_selection_page_prefix($language = NULL) {
-  static $prefix_language = NULL;
-  if (!empty($language)) {
-    echo "Setting to $language";
-    $prefix_language = $language;
-  }
-  return $prefix_language;
-}
-*/
 
 /**
  * Implements hook_init().
@@ -138,56 +74,14 @@ function i18n_selection_page_init() {
   $query = drupal_get_query_parameters();
   $query['destination'] = $_GET['q'];
 
-  $url = url('language_selection', array('query' => $query, 'absolute' => FALSE, 'language' => LANGUAGE_NONE));
 
   if (!$error) {
+    //$url = url('language_selection', array('query' => $query, 'absolute' => FALSE, 'language' => LANGUAGE_NONE));
     //drupal_set_message("Redirect to $url",'warning');
     drupal_goto('language_selection', array('query' => $query, 'absolute' => FALSE, 'language' => LANGUAGE_NONE));
     //header("Location: $url");
     //exit;
   }
-}
-
-function i18n_selection_page_language_initialize() {
-  $types = language_types();
-
-  // Ensure the language is correctly returned, even without multilanguage
-  // support. Also make sure we have a $language fallback, in case a language
-  // negotiation callback needs to do a full bootstrap.
-  // Useful for eg. XML/HTML 'lang' attributes.
-  $default = language_default();
-  foreach ($types as $type) {
-    //$GLOBALS[$type] = $default;
-  }
-  if (drupal_multilingual()) {
-    include_once DRUPAL_ROOT . '/includes/language.inc';
-    foreach ($types as $type) {
-      dpm(i18n_language_initialize($type), "language_initialize($type)");
-      $GLOBALS[$type] = i18n_language_initialize($type);
-    }
-  }
-}
-
-function i18n_language_initialize($type) {
-  // Execute the language providers in the order they were set up and return the
-  // first valid language found.
-  $negotiation = variable_get("language_negotiation_$type", array());
-  //echo "<pre>NEGOTIATION TYPE:".$type."</pre>";
-
-  foreach ($negotiation as $id => $provider) {
-    $language = language_provider_invoke($id, $provider);
-    /*echo "<pre>ID:".print_r($id,1)."</pre>";
-    echo "<pre>PROVIDER:".print_r($provider,1)."</pre>";
-    echo "<pre>LANGUAGE:".print_r($language,1)."</pre>";
-    */
-    if ($language && $id != 'language-selection-page') {
-      //$language->provider = $id;
-      return $language;
-    }
-  }
-
-  // If no other language was found use the default one.
-  return language_default();
 }
 
 /**
