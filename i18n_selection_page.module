@@ -120,36 +120,29 @@ function _i18n_selection_page_prefix($language = NULL) {
  */
 function i18n_selection_page_init() {
 
-  $lll = i18n_selection_page_language_initialize();
-
-  //dpm($GLOBALS);
-
   if (!language_negotiation_get_any(LANGUAGE_NEGOTIATION_SELECTION_PAGE)) {
     drupal_set_message("i18n selection page disabled.");
     return TRUE;
   }
-  
-  $lang_default = language_default();
-  $lang_list = language_list('enabled');
-  $languages = $lang_list[1];
-  $error = FALSE;
 
-  $language_from_url = i18n_selection_page_language_from_url($languages);
+  $language = $GLOBALS['language'];
+  $error = FALSE;
 
   // Some checks
   if ($_GET['q'] == 'language_selection') $error = TRUE;
   if (!isset($_SERVER['SERVER_ADDR'])) $error = TRUE;
-  if ($language_from_url && $language_from_url != 'und') $error = TRUE;
+
+  if (!isset($language->provider) || $language->provider != LOCALE_LANGUAGE_NEGOTIATION_URL_FALLBACK) return;
 
   // Work on query
   $query = drupal_get_query_parameters();
   $query['destination'] = $_GET['q'];
 
-  $url = url('language_selection', array('query' => $query, 'absolute' => FALSE, 'language' => $lang_default));
+  $url = url('language_selection', array('query' => $query, 'absolute' => FALSE, 'language' => LANGUAGE_NONE));
 
   if (!$error) {
-    drupal_set_message("Redirect to $url",'warning');
-    //drupal_goto('language_selection', array('query' => $query, 'absolute' => FALSE, 'language' => $lang_default));
+    //drupal_set_message("Redirect to $url",'warning');
+    drupal_goto('language_selection', array('query' => $query, 'absolute' => FALSE, 'language' => LANGUAGE_NONE));
     //header("Location: $url");
     //exit;
   }
@@ -188,7 +181,7 @@ function i18n_language_initialize($type) {
     echo "<pre>LANGUAGE:".print_r($language,1)."</pre>";
     */
     if ($language && $id != 'language-selection-page') {
-      $language->provider = $id;
+      //$language->provider = $id;
       return $language;
     }
   }

@@ -19,12 +19,13 @@ function i18n_selection_page_selection_page() {
   $data['from_link']['link_text'] = url($from, array('query' => $query, 'language' => LANGUAGE_NONE));
   $data['from_link']['html'] = l($link_text, $from, array('query' => $query, 'language' => LANGUAGE_NONE));
 
-  $tpaths = translation_path_get_translations($from);
+  //$tpaths = translation_path_get_translations($from);
 
   foreach (language_list() as $prefix => $language) {
     if (!$language->prefix) continue;
     $link_text = drupal_ucfirst(drupal_strtolower(t('Continue in', array(), array('langcode'=>$language->language)))) . ' ' . $language->native;
-    $to = array_key_exists($language->language, $tpaths) ? $tpaths[$language->language] : $from;
+    //$to = array_key_exists($language->language, $tpaths) ? $tpaths[$language->language] : $from;
+    $to = $from;
     $data['links']['items'][$prefix] = l($link_text, $to, array('query' => $query, 'language' => $language));
   }
 
@@ -33,24 +34,18 @@ function i18n_selection_page_selection_page() {
 
   switch (variable_get('i18n_selection_page_redirect_type', 64)) {
     case 32:
-      return theme('i18n_selection_page_body', $data);
+      return $data['content'];
       break;
     case 64:
+      drupal_add_css(drupal_get_path('module', 'i18n_selection_page') . '/themes/css/i18n_selection_page.css');
+
+      $data['head'] = drupal_get_html_head();
+      $data['css'] = drupal_add_css();
+      $data['styles'] = drupal_get_css();
+      $data['scripts'] = drupal_get_js();
+      $data['title'] = "Language selection";
+
       print theme('i18n_selection_page', $data);
       exit;
   }
-}
-
-function i18n_selection_page_preprocess_i18n_selection_page(&$vars) {
-  drupal_add_css(drupal_get_path('module', 'i18n_selection_page').'/themes/css/i18n_selection_page.css');
-
-  $vars['head']    = drupal_get_html_head();
-  $vars['css']     = drupal_add_css();
-  $vars['styles']  = drupal_get_css();
-  $vars['scripts'] = drupal_get_js();
-  $vars['title']   = "Language selection";
-}
-
-function i18n_selection_page_preprocess_i18n_selection_page_body(&$vars) {
-  
 }
