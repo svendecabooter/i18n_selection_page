@@ -57,10 +57,13 @@ function i18n_selection_page_language_negotiation_info() {
 function i18n_selection_page_init() {
   require_once('./includes/language.inc');
 
+  $weights = variable_get('locale_language_providers_weight_language', array());
   $error = FALSE;
   $language = $GLOBALS['language'];
 
   // Some checks
+  if ($weights[LANGUAGE_NEGOTIATION_SELECTION_PAGE] > $weights[LOCALE_LANGUAGE_NEGOTIATION_URL]) $error = TRUE;
+  if ($weights[LANGUAGE_NEGOTIATION_SELECTION_PAGE] > $weights[LANGUAGE_NEGOTIATION_DEFAULT]) $error = TRUE;
   if (!language_negotiation_get_any(LANGUAGE_NEGOTIATION_SELECTION_PAGE)) $error = TRUE;
   if ($_GET['q'] == 'language_selection') $error = TRUE;
   if (!isset($_SERVER['SERVER_ADDR'])) $error = TRUE;
