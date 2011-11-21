@@ -21,9 +21,13 @@ function i18n_selection_page_selection_page() {
 
   //$tpaths = translation_path_get_translations($from);
 
+  //echo "<pre>" . print_r($GLOBALS, 1) . "</pre>";
+
   foreach (language_list() as $prefix => $language) {
     if (!$language->prefix) continue;
     $link_text = drupal_ucfirst(drupal_strtolower(t('Continue in', array(), array('langcode'=>$language->language)))) . ' ' . $language->native;
+    $link_text = url($to, array('query' => $query, 'language' => $language));
+
     //$to = array_key_exists($language->language, $tpaths) ? $tpaths[$language->language] : $from;
     $to = $from;
     $data['links']['items'][$prefix] = l($link_text, $to, array('query' => $query, 'language' => $language));

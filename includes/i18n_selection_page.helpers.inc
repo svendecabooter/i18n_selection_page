@@ -38,18 +38,33 @@ function _i18n_resolve_lang() {
  *
  * @return object
  */
-function _i18n_detect_lang_from_url() {
-  $url_parsed = _i18n_selection_page_parse_url_custom();
-  $path = explode('/', $url_parsed['path']);
-  $lang_list = language_list('enabled');
-  $lang_list = $lang_list[1];
-  foreach ($lang_list as $lang) {
-    if (!empty($lang->prefix) && $lang->prefix == $path[0]) {
-      return $lang;
+function _i18n_detect_lang_from_url($languages) {
+    $language_url = FALSE;
+
+    switch (variable_get('locale_language_negotiation_url_part', LOCALE_LANGUAGE_NEGOTIATION_URL_PREFIX)) {
+      case LOCALE_LANGUAGE_NEGOTIATION_URL_PREFIX:
+
+        $path = str_replace(base_path(), '', $_SERVER['REQUEST_URI']);
+
+        list($language, $path) = language_url_split_prefix(isset($path) ? $path : NULL, $languages);
+        if ($language !== FALSE) {
+          $language_url = $language->language;
+        }
+        break;
+
+      case LOCALE_LANGUAGE_NEGOTIATION_URL_DOMAIN:
+        foreach ($languages as $language) {
+          $host = parse_url($language->domain, PHP_URL_HOST);
+          if ($host && ($_SERVER['HTTP_HOST'] == $host)) {
+            $language_url = $language->language;
+            break;
+          }
+        }
+        break;
     }
+
+    return $language_url;
   }
-  return NULL;
-}
 
 /**
  * Custom function who detect the language from a cookie.
