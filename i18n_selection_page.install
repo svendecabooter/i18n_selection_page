@@ -1,8 +1,61 @@
 <?php
 /**
  * @file
- * The install page.
+ * Module installation code
  */
+
+/*
+ * Implementation of hook_requirements().
+ */
+function i18n_selection_page_requirements($phase) {
+  module_load_include('inc', 'i18n_selection_page', 'includes/i18n_selection_page.helpers');
+
+  $requirements = array();
+  $lang_list = language_list('enabled');
+  $language_count = _i18n_selection_page_check_language_count();
+
+  if ($language_count['db'] != $language_count['vars']) {
+    $requirements['i18n_selection_page'] = array(
+      'title' => 'Language Selection Page',
+      'value' => _i18n_selection_page_get_error_messages('language_count', $language_count['db'], $language_count['vars']),
+      'severity' => REQUIREMENT_ERROR
+    );
+    return $requirements;
+  }
+
+  if ($language_count['db'] > 1) {
+    $lang_list_without_prefix = array();
+    foreach ($lang_list[1] as $lang) {
+      if (empty($lang->prefix)) {
+        $lang_list_without_prefix[$lang->language] = _i18n_selection_page_get_error_messages('language_prefix', url('admin/config/regional/language/edit/' . $lang->language), $lang->name);
+      }
+    }
+    if (count($lang_list_without_prefix) >= 1) {
+      $requirements['i18n_selection_page'] = array(
+        'title' => 'Language Selection Page',
+        'value' => implode('<br/>', $lang_list_without_prefix),
+        'severity' => REQUIREMENT_WARNING
+      );
+    }
+    else {
+      $requirements['i18n_selection_page'] = array(
+        'title' => 'Language Selection Page',
+        'value' => _i18n_selection_page_get_error_messages('language_all_good'),
+        'severity' => REQUIREMENT_OK
+      );
+    }
+  }
+  else {
+    $link = url('admin/config/regional/language');
+    $requirements['i18n_selection_page'] = array(
+      'title' => 'Language Selection Page',
+      'value' => _i18n_selection_page_get_error_messages('language_only_one', $link),
+      'severity' => REQUIREMENT_WARNING
+    );
+  }
+
+  return $requirements;
+}
 
 /**
  * Implementation of hook_uninstall()

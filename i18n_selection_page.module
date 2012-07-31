@@ -120,7 +120,7 @@ function i18n_selection_page_init() {
   $languages = $languages[1];
 
   $lang_from_url = _i18n_detect_lang_from_url($languages);
-  
+
   if (!language_negotiation_get_any(LANGUAGE_NEGOTIATION_SELECTION_PAGE)) $error = TRUE;
   //if ($weights[LANGUAGE_NEGOTIATION_SELECTION_PAGE] > $weights[LOCALE_LANGUAGE_NEGOTIATION_URL]) $error = TRUE;
   //if ($weights[LANGUAGE_NEGOTIATION_SELECTION_PAGE] > $weights[LANGUAGE_NEGOTIATION_DEFAULT]) $error = TRUE;
@@ -181,72 +181,3 @@ function i18n_selection_page_theme() {
     )
   );
 }
-
-/**
- * Implementation of hook_requirements().
- */
-/*
-function i18n_selection_page_requirements($phase) {
-  module_load_include('inc', 'i18n_selection_page', 'includes/i18n_selection_page.helpers');
-
-  $requirements = array();
-  $t = get_t();
-  $lang_list = language_list('enabled');
-  $messages = _i18n_selection_page_error_messages();
-  $language_count = _i18n_selection_page_check_language_count();
-
-  if (variable_get('language_negotiation', LANGUAGE_NEGOTIATION_NONE) != 2) {
-    $requirements['i18n_selection_page'] = array(
-      'title' => 'I18N Selection Page',
-      'value' => $t($messages['language_negotiation'], array(
-                                                            '%setting_name' => t('Language negotiation'),
-                                                            '%setting_value' => t('Path prefix with language fallback.'),
-                                                            '@setting_url' => url('admin/settings/language/configure'),
-                                                       )),
-      'severity' => REQUIREMENT_ERROR
-    );
-    return $requirements;
-  }
-
-  if ($language_count['db'] != $language_count['vars']) {
-    $requirements['i18n_selection_page'] = array(
-      'title' => 'I18N Selection Page',
-      'value' => $t($messages['language_count'], array('@language_count_db' => $language_count['db'], '@language_count_vars' => $language_count['vars'])),
-      'severity' => REQUIREMENT_ERROR
-    );
-    return $requirements;
-  }
-
-  if ($language_count['db'] > 1) {
-    $lang_list_without_prefix = array();
-    foreach ($lang_list[1] as $lang) {
-      if (empty($lang->prefix)) {
-        $lang_list_without_prefix[$lang->language] = $t($messages['language_prefix'], array('@language_url' => url('admin/settings/language/edit/' . $lang->language), '@language_name' => $lang->name));
-      }
-    }
-    if (count($lang_list_without_prefix) >= 1) {
-      $requirements['i18n_selection_page'] = array(
-        'title' => 'I18N Selection Page',
-        'value' => implode('<br/>', $lang_list_without_prefix),
-        'severity' => REQUIREMENT_WARNING
-      );
-    }
-    else {
-      $requirements['i18n_selection_page'] = array(
-        'title' => 'I18N Selection Page',
-        'value' => t($messages['language_all_good']),
-        'severity' => REQUIREMENT_OK
-      );
-    }
-  } else {
-    $link = url('admin/settings/language');
-    $requirements['i18n_selection_page'] = array(
-      'title' => 'I18N Selection Page',
-      'value' => $t($messages['language_only_one'], array('@link' => $link)),
-      'severity' => REQUIREMENT_WARNING
-    );
-  }
-
-  return $requirements;
-}
-*/
