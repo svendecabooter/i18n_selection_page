@@ -11,12 +11,15 @@
 function i18n_selection_page_admin() {
   module_load_include('inc', 'i18n_selection_page', 'includes/i18n_selection_page.helpers');
 
-  $options = array('32' => t('Template in theme'), '64' => 'Template only');
+  $options = array(
+    I18N_SELECTION_PAGE_TEMPLATE_IN_THEME => t('Template in theme'),
+    I18N_SELECTION_PAGE_TEMPLATE_ONLY => 'Template only'
+  );
   $form['i18n_selection_page_redirect_type'] = array(
     '#title' => t('Select the way the Selection Page should work'),
     '#type' => 'select',
     '#multiple' => FALSE,
-    '#default_value' => variable_get('i18n_selection_page_redirect_type', 64),
+    '#default_value' => variable_get('i18n_selection_page_redirect_type', I18N_SELECTION_PAGE_TEMPLATE_ONLY),
     '#options' => $options,
     '#description' => t('<b>Template in theme</b>: Insert the I18N Selection Page body as <i>$content</i> in the current theme.
                          <br/><b>Template only</b>: Display the I18N Selection Page template only.

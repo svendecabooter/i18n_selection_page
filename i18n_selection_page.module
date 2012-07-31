@@ -1,6 +1,9 @@
 <?php
 
 define('LANGUAGE_NEGOTIATION_SELECTION_PAGE', 'language-selection-page');
+// theme settings - numeric values for D6 upgrade purposes
+define('I18N_SELECTION_PAGE_TEMPLATE_IN_THEME', 32);
+define('I18N_SELECTION_PAGE_TEMPLATE_ONLY', 64);
 
 /**
  * Implements hook_menu().
