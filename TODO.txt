@@ -4,6 +4,7 @@ D6 + D7:
 
 D7:
 ===
+* rename module to language_selection_page ?
 * re-enable blacklisting option
 * add more options to set the language based on user input:
   - through url redirect (default)
