@@ -1,0 +1,7 @@
+D6 + D7:
+========
+* clean up notices in _i18n_selection_page_get_error_messages() or find a better mechanism
+
+D7:
+===
+*
