@@ -64,7 +64,6 @@ function i18n_selection_page_requirements($phase) {
  */
 function i18n_selection_page_uninstall() {
   variable_del('i18n_selection_page_use_language_cookie');
-  variable_del('i18n_selection_page_enable');
   variable_del('i18n_selection_page_redirect_type');
   variable_del('i18n_selection_page_blacklisted_paths');
   variable_del('i18n_selection_page_cookie_lifetime');

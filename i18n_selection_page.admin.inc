@@ -11,15 +11,6 @@
 function i18n_selection_page_admin() {
   module_load_include('inc', 'i18n_selection_page', 'includes/i18n_selection_page.helpers');
 
-  $options = array('1' => t('Yes but redirect to the correct page with language found from cookie if it exists'), '2' => t('No'), '4' => t('Yes'));
-  $form['i18n_selection_page_enable'] = array(
-    '#title' => t('Redirect to a language selection page if no language is detected from URL and/or Cookie ?'),
-    '#type' => 'radios',
-    '#default_value' => variable_get('i18n_selection_page_enable', 2),
-    '#options' => $options,
-    '#description' => t('Select yes if you want to enable the I18N Selection Page when no language is detected from URL and/or Cookie.')
-  );
-
   $options = array('32' => t('Template in theme'), '64' => 'Template only');
   $form['i18n_selection_page_redirect_type'] = array(
     '#title' => t('Select the way the Selection Page should work'),

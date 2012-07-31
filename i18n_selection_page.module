@@ -30,9 +30,9 @@ function i18n_selection_page_menu() {
 }
 
 /**
- * Implementation of hook_language_negotiation_info().
+ * Implements hook_language_negotiation_info().
  *
- * @return void
+ * @return array()
  */
 function i18n_selection_page_language_negotiation_info() {
   $language_providers[LANGUAGE_NEGOTIATION_SELECTION_PAGE] = array(
@@ -45,121 +45,40 @@ function i18n_selection_page_language_negotiation_info() {
     'file' => drupal_get_path('module', 'i18n_selection_page') . '/i18n_selection_page.module',
     'weight' => 50,
     'name' => t('Selection Page'),
-    'description' => t('Use a Selection Page to the visitor to choose it\'s language.'),
+    'description' => t('Show a language selection page to the visitor for making a language choice.'),
     'config' => 'admin/config/regional/language/configure/selection_page'
   );
   return $language_providers;
 }
 
+/**
+ * Language selection callback method
+ */
 function i18n_selection_page_language($languages) {
   require_once('./includes/locale.inc');
   require_once('./includes/path.inc');
   require_once('./includes/common.inc');
 
   $lang = locale_language_from_url($languages);
-  $error = FALSE;
+  if ($lang) {
+    return $lang;
+  }
 
-  if ($lang) return $lang;
+  // Don't run this code on the language selection page itself.
+  if ($_GET['q'] == 'language_selection') {
+    return;
+  }
 
-  if ($_GET['q'] == 'language_selection') $error = TRUE;
-  if (!isset($_SERVER['SERVER_ADDR'])) $error = TRUE;
+  // @TODO: document this
+  if (!isset($_SERVER['SERVER_ADDR'])) {
+    return;
+  }
 
-  if ($error) return;
-
+  // redirect to the language selection page, with the currently requested page as destination
   $query = drupal_get_query_parameters();
-  $query['destination'] = $_GET['q'];
-
-  $behavior = variable_get('i18n_selection_page_enable', 2);
-  $destination = NULL;
-  $query = drupal_get_query_parameters();
-  $query['destination'] = $_GET['q'] ? $_GET['q'] : 'node';
+  $query['destination'] = $_GET['q'] ? $_GET['q'] : '<front>';
   $language = $GLOBALS['language'];
-
-  debug($behavior);
-
-  switch ($behavior) {
-    case 2:
-      $destination = NULL;
-      break;
-    case 1:
-      $destination = $_GET['q'];
-      if ($language->provider == LANGUAGE_NEGOTIATION_COOKIE) {
-        unset($query['destination']);
-        break;
-      }
-    case 4:
-      $destination = 'language_selection';
-      //$language = LANGUAGE_NONE;
-      break;
-  }
-
-  if ($destination) {
-    //$url = url($destination, array('query' => $query, 'absolute' => FALSE, 'language' => $language));
-    //drupal_set_message("Redirect to $url", 'warning');
-    drupal_goto($destination, array('query' => $query, 'absolute' => FALSE, 'language' => LANGUAGE_NONE));
-  }
-}
-
-/**
- * Implements hook_init().
- */
-function i18n_selection_page_init() {
-
-  //dpm($GLOBALS);
-
-  /*
-  require_once('./includes/language.inc');
-  module_load_include('inc', 'i18n_selection_page', 'includes/i18n_selection_page.helpers');
-
-  $weights = variable_get('locale_language_providers_weight_language', array());
-  $error = FALSE;
-  $language = $GLOBALS['language'];
-
-  // Some checks
-  $languages = language_list('enabled');
-  $languages = $languages[1];
-
-  $lang_from_url = _i18n_detect_lang_from_url($languages);
-
-  if (!language_negotiation_get_any(LANGUAGE_NEGOTIATION_SELECTION_PAGE)) $error = TRUE;
-  //if ($weights[LANGUAGE_NEGOTIATION_SELECTION_PAGE] > $weights[LOCALE_LANGUAGE_NEGOTIATION_URL]) $error = TRUE;
-  //if ($weights[LANGUAGE_NEGOTIATION_SELECTION_PAGE] > $weights[LANGUAGE_NEGOTIATION_DEFAULT]) $error = TRUE;
-  if ($lang_from_url) $error = TRUE;
-  if ($_GET['q'] == 'language_selection') $error = TRUE;
-  if (!isset($_SERVER['SERVER_ADDR'])) $error = TRUE;
-  //if (!isset($language->provider) || $language->provider != LOCALE_LANGUAGE_NEGOTIATION_URL_FALLBACK) $error = TRUE;
-
-  if ($error) return;
-
-  $behavior = variable_get('i18n_selection_page_enable', 2);
-  $destination = NULL;
-  $query = drupal_get_query_parameters();
-  $query['destination'] = $_GET['q'];
-
-  //dpm($language);
-
-  switch ($behavior) {
-    case 2:
-      $destination = NULL;
-      break;
-    case 1:
-      $destination = $_GET['q'];
-      if ($language->provider == LANGUAGE_NEGOTIATION_COOKIE) {
-        unset($query['destination']);
-        break;
-      }
-    case 4:
-      $destination = 'language_selection';
-      $language = LANGUAGE_NONE;
-      break;
-  }
-
-  if ($destination) {
-    //$url = url($destination, array('query' => $query, 'absolute' => FALSE, 'language' => $language));
-    //drupal_set_message("Redirect to $url", 'warning');
-    drupal_goto($destination, array('query' => $query, 'absolute' => FALSE, 'language' => $language));
-  }
-*/
+  drupal_goto('language_selection', array('query' => $query, 'absolute' => FALSE, 'language' => LANGUAGE_NONE));
 }
 
 /**

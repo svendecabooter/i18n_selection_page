@@ -4,4 +4,6 @@ D6 + D7:
 
 D7:
 ===
-* improve & clarify integration with http://drupal.org/project/language_cookie to get D6 cookie features back
+* add more options to set the language based on user input:
+  - through url redirect (default)
+  - cookie / session ?!
