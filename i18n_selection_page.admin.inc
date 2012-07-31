@@ -24,13 +24,13 @@ function i18n_selection_page_admin() {
                          <br/>Create a file named <i>i18n_selection_page_body.tpl.php</i> in your theme directory if you want to override the body only.')
   );
 
-  $form['i18n_selection_page_blacklisted_paths'] = array(
-    '#type' => 'textarea',
-    '#title' => t('List of paths to blacklist'),
-    '#default_value' => implode("\n", variable_get('i18n_selection_page_blacklisted_paths', array('admin', 'user', 'admin/*', 'admin*', 'node/add/*', 'node/*/edit'))),
-    '#size' => 10,
-    '#description' => t('Write on each line a path to blacklist from Language Selection Page processor')
-  );
+  // $form['i18n_selection_page_blacklisted_paths'] = array(
+  //  '#type' => 'textarea',
+  //  '#title' => t('List of paths to blacklist'),
+  //  '#default_value' => implode("\n", variable_get('i18n_selection_page_blacklisted_paths', array('admin', 'user', 'admin/*', 'admin*', 'node/add/*', 'node/*/edit'))),
+  //  '#size' => 10,
+  //  '#description' => t('Write on each line a path to blacklist from Language Selection Page processor')
+  //);
 
   $form['#submit'][] = 'i18n_selection_page_admin_submit';
 
